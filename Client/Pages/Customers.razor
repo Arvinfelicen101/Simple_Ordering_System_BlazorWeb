@@ -1,0 +1,262 @@
+﻿@page "/customers"
+@inject ICustomerService CustomerService
+@inject NavigationManager NavigationManager
+@inject SweetAlertService Swal
+
+
+<style>
+    .recently-updated {
+        background-color: #b5b3b3 /* Green color code */
+    }
+</style>
+
+<h3>Customers</h3>
+<div class="mb-3 mt-5 d-flex">
+    <button class="btn btn-primary me-1" @onclick="CreateNewCustomer"><i class="oi oi-plus text-white oi-3x"></i></button>
+    <button class="btn btn-danger mx-1" @onclick="DeleteSelectedCustomers" disabled="@(selectedCustomers.Count == 0)"><i class="oi oi-trash text-white oi-3x"></i></button>
+    <button class="btn btn-success mx-1" @onclick="EditSelectedCustomer" disabled="@((selectedCustomers == null) || (selectedCustomers.Count != 1))"><i class="oi oi-pencil text-white oi-3x"></i></button>
+
+    <div class="d-flex ms-auto col-md-3">
+        <div class="input-group position-relative ms-3 d-flex align-items-center">
+            <!-- Search input group -->
+            <div class="input-group-prepend">
+                <!-- Search icon -->
+                <span class="input-group-text bg-transparent border-0">
+                    <i class="oi oi-magnifying-glass text-muted oi-3x"></i>
+                </span>
+            </div>
+
+            <!-- Search input -->
+            <input class="form-control pl-4 focus-highlight" type="search" @bind="searchTerm" placeholder="Search" aria-label="Search" @bind:event="oninput" @onkeyup="async () => await SearchCustomers()">
+
+            <!-- Additional span with border on the right -->
+
+        </div>
+    </div>
+
+
+</div>
+
+
+
+
+@if (CustomerService.PagedCustomers != null)
+{
+    <div class="table-responsive">
+    <table class="table table-striped table-hover ">
+        <thead>
+                <tr>
+                    <th class="text-nowrap">
+                        <input type="checkbox" @bind="selectAllChecked" @onclick="ToggleSelectAll" />
+                    </th>
+                    <th class="text-nowrap">Customer Code</th>
+                    <th class="text-nowrap">First Name</th>
+                    <th class="text-nowrap">Middle Name</th>
+                    <th class="text-nowrap">Last Name</th>
+                    <th class="text-nowrap">Billing Address</th>
+                    <th class="text-nowrap">Shipping Address</th>
+                    <th class="text-nowrap">Email</th>
+                    <th class="text-nowrap">Mobile Number</th>
+                    <th class="text-nowrap">Home Number</th>
+                </tr>
+        </thead>
+        <tbody>
+            @foreach (var customer in CustomerService.PagedCustomers.Items)
+            {
+                    <tr class="@((CustomerService.GetRecentlyUpdatedCustomerIds().Contains(customer.CustCode)) ? "recently-updated" : "")">
+                    <td>
+                        <input type="checkbox" checked="@(selectedCustomers != null && selectedCustomers.Contains(customer.CustCode))" @onchange="@((args) => ToggleSelected(args, customer.CustCode))" />
+                    </td>
+                    <td>@customer.CustCode</td>
+                    <td>@customer.Fname</td>
+                    <td>@customer.Mname</td>
+                    <td>@customer.Lname</td>
+                    <td>@customer.BillAddress</td>
+                    <td>@customer.ShipAddress</td>
+                    <td>@customer.Email</td>
+                    <td>@customer.MobileNum</td>
+                    <td>@customer.HomeNum</td>
+                
+                </tr>
+            }
+        </tbody>
+    </table>
+    </div>
+
+    <nav aria-label="...">
+        <ul class="pagination">
+            <li class="page-item @(CustomerService.PagedCustomers.CurrentPage == 1 ? "disabled" : "")">
+                <a class="page-link" @onclick="(() => LoadCustomers(CustomerService.PagedCustomers.CurrentPage - 1))">Previous</a>
+            </li>
+
+            @for (int i = 1; i <= CustomerService.PagedCustomers.TotalPages; i++)
+            {
+                int j = i;
+                <li class="page-item @(i == CustomerService.PagedCustomers.CurrentPage ? "active" : "")">
+                    <a class="page-link" @onclick="(() => LoadCustomers(j))">@i</a>
+                </li>
+            }
+
+            <li class="page-item @(CustomerService.PagedCustomers.CurrentPage == CustomerService.PagedCustomers.TotalPages ? "disabled" : "")">
+                <a class="page-link" @onclick="(() => LoadCustomers(CustomerService.PagedCustomers.CurrentPage + 1))">Next</a>
+            </li>
+        </ul>
+    </nav>
+
+}
+else
+{
+    <p>Loading...</p>
+}
+
+
+@code {
+    private List<string> selectedCustomers = new List<string>();
+    private bool selectAllChecked;
+    int? selectedCustomerId;
+    private string searchTerm = string.Empty;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CustomerService.GetCustomers();
+        await LoadCustomers();
+    }
+
+    private async Task LoadCustomers(int page = 1, int pageSize = 10)
+    {
+        await CustomerService.GetCustomers(page, pageSize, searchTerm);
+    }
+
+    private async Task SearchCustomers()
+    {
+        await LoadCustomers();
+    }
+
+
+    void EditSelectedCustomer()
+    {
+        if (selectedCustomers.Any())
+        {
+           
+                foreach (var customerId in selectedCustomers)
+                {
+                    NavigationManager.NavigateTo($"customer/{customerId}");
+                }
+           
+        }
+        else
+        {
+            // Handle the case where no product is selected for editing
+            // You might want to display a message or take appropriate action
+        }
+    }
+
+    void CreateNewCustomer()
+    {
+        _ = Swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Are you sure?",
+                Text = "Do you want to create a new product?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true,
+            }).ContinueWith(result =>
+    {
+        if (result.Result.IsConfirmed)
+        {
+            NavigationManager.NavigateTo("/customer");
+        }
+    });
+    }
+
+    async void DeleteSelectedCustomers()
+    {
+        if (selectedCustomers.Any())
+        {
+            var result = await Swal.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Are you sure?",
+                    Text = "This action cannot be undone. Are you sure you want to delete the selected products?",
+                    Icon = SweetAlertIcon.Warning,
+                    ShowCancelButton = true,
+                    ConfirmButtonColor = "#d33", // Change confirm button color for warning
+                    ConfirmButtonText = "Yes, delete it!",
+                    CancelButtonText = "No, cancel!",
+                });
+
+            if (result.IsConfirmed)
+            {
+                foreach (var customerId in selectedCustomers.ToList())
+                {
+                    // Send delete request for each product
+                    await CustomerService.DeleteCustomer(customerId);
+                }
+
+                // Clear the selected list after deletion
+                selectedCustomers.Clear();
+
+                // Refresh the product list after deletion
+                await LoadCustomers();
+                StateHasChanged();
+
+                // Show success alert
+                await Swal.FireAsync("Deleted!", "The selected products have been deleted.", SweetAlertIcon.Success);
+            }
+            else
+            {
+                // Handle the case where the user cancels the deletion
+                // You might want to display a message or take appropriate action
+            }
+        }
+        else
+        {
+            // Handle the case where no product is selected for deletion
+            // You might want to display a message or take appropriate action
+        }
+    }
+
+
+    private void ToggleSelected(ChangeEventArgs args, String custCode)
+    {
+        if (args.Value is bool isChecked)
+        {
+            if (custCode == "-1")
+            {
+                // Toggle all checkboxes based on master checkbox state
+                selectedCustomers = isChecked ? CustomerService.PagedCustomers.Items.Select(p => p.CustCode).ToList() : new List<String>();
+            }
+            else
+            {
+                // Toggle individual checkbox
+                if (isChecked && !selectedCustomers.Contains(custCode))
+                {
+                    selectedCustomers.Add(custCode);
+                }
+                else if (!isChecked && selectedCustomers.Contains(custCode))
+                {
+                    selectedCustomers.Remove(custCode);
+                }
+            }
+        }
+    }
+
+    private void ToggleSelectAll()
+    {
+        selectAllChecked = !selectAllChecked;
+
+        if (selectAllChecked)
+        {
+            selectedCustomers = CustomerService.PagedCustomers.Items.Select(p => p.CustCode).ToList();
+        }
+        else
+        {
+            selectedCustomers.Clear();
+        }
+    }
+
+
+
+
+
+}

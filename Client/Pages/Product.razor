@@ -1,0 +1,119 @@
+﻿@page "/product"
+@page "/product/{prodCode}"
+@inject IProductService ProductService
+@inject NavigationManager NavigationManager
+@inject SweetAlertService Swal
+
+
+
+@if(ProdCode is null)
+{
+    <PageTitle> Create a new Product </PageTitle>
+    <h3> Create a new Product </h3>
+}
+
+else
+{
+    <PageTitle> Edir @product.Name </PageTitle>
+    <h3> Edit @product.Name </h3>
+}
+
+<EditForm Model="product" OnSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+    
+
+    <div>
+        <label for="prodcode" >Product Code</label>
+        <InputText id="prodcode" @bind-Value="product.ProdCode" class="form-control" />
+        <ValidationMessage For="@(() => product.ProdCode)" />
+</div>
+
+    <div>
+        <label for="name">Name</label>
+        <InputText id="name" @bind-Value="product.Name" placeholder="New Product" class="form-control" />
+        <ValidationMessage For="@(() => product.Name)" />
+    </div>
+ 
+
+    <div>
+        <label for="price">Price</label>
+        <InputNumber id="price" @bind-Value="product.Price" class="form-control" />
+        <ValidationMessage For="@(() => product.Price)" />
+    </div>
+
+    <br/>
+
+
+    <button type="submit" class="btn btn-primary">@btnText</button>
+
+
+</EditForm>
+
+@code {
+    [Parameter]
+    public string? ProdCode { get; set; }
+
+    string btnText = string.Empty;
+
+    OrderingSystem.Shared.Product product = new OrderingSystem.Shared.Product();
+
+
+
+    protected override void OnInitialized()
+    {
+        btnText = ProdCode == null ? "Save New Product" : "Update Product";
+    }
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (ProdCode is not null)
+        {
+            var result = await ProductService.GetProductById(ProdCode);
+            if (result is not null)
+                product = result;
+            else
+                NavigationManager.NavigateTo("product");
+        }
+    }
+
+    async Task HandleSubmit()
+    {
+        if (!string.IsNullOrEmpty(ProdCode))
+        {
+            var result = await Swal.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Are you sure?",
+                    Text = "Do you want to update the product?",
+                    Icon = SweetAlertIcon.Question,
+                    ShowCancelButton = true,
+                });
+
+            if (result.IsConfirmed)
+            {
+                await ProductService.UpdateProduct(ProdCode, product);
+
+
+                await Swal.FireAsync("Success!", "Product updated successfully.", SweetAlertIcon.Success);
+            }
+
+            
+        }
+        else
+        {
+            var result = await Swal.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Are you sure?",
+                    Text = "Do you want to create the new product?",
+                    Icon = SweetAlertIcon.Question,
+                    ShowCancelButton = true,
+                });
+
+            if (result.IsConfirmed)
+            {
+                await ProductService.CreateProduct(product);
+                await Swal.FireAsync("Success!", "Product created successfully.", SweetAlertIcon.Success);
+            }
+        }
+    }
+}
