@@ -27,7 +27,7 @@ else
             
             <div class="mb-3">
                 <label for="custcode" class="form-label">Customer Code</label>
-                <InputText id="custcode" @bind-Value="customer.CustCode" class="form-control" disabled="(!String.IsNullOrEmpty(CustCode))" />
+                <InputText id="custcode" @bind-Value="customer.CustCode" class="form-control" disabled="@(CustCode is not null)" />
                 <ValidationMessage For="@(() => customer.CustCode)" />
             </div>
 

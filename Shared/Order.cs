@@ -14,12 +14,12 @@ namespace OrderingSystem.Shared
         public int OrderId { get; set; }
         public int OrderNo { get; set; }
         public DateTime OrderDate { get; set; }
-        public string CustomerCustCode { get; set; }
-        public Customer Customer { get; set; }
+        public string? CustomerCustCode { get; set; }
+        public virtual Customer? Customer { get; set; }
 
-        public string ProductProdCode { get; set; }
+        public string? ProductProdCode { get; set; }
 
-        public Product Product { get; set; }
+        public virtual Product? Product { get; set; }
 
         public int Qty { get; set; }
         public double Price { get; set; }

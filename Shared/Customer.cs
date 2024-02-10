@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace OrderingSystem.Shared
 {
@@ -14,6 +15,8 @@ namespace OrderingSystem.Shared
         public string Fname { get; set; }
         public string Mname { get; set; }
         public string Lname { get; set; }
+
+        public string FullName => $"{Fname} {Lname}";
         public string BillAddress { get; set; }
         public string ShipAddress { get; set; }
         public string Email { get; set; }
@@ -22,5 +25,6 @@ namespace OrderingSystem.Shared
 
         public List<Order>? Orders { get; set; }
 
+       
     }
 }
