@@ -6,7 +6,7 @@
 
 <style>
     .recently-updated {
-        background-color: #b5b3b3 /* Green color code */
+        background-color: #b5b3b3 
     }
 </style>
 
@@ -18,18 +18,17 @@
 
     <div class="d-flex ms-auto col-md-3">
         <div class="input-group position-relative ms-3 d-flex align-items-center">
-            <!-- Search input group -->
+         
             <div class="input-group-prepend">
-                <!-- Search icon -->
+            
                 <span class="input-group-text bg-transparent border-0">
                     <i class="oi oi-magnifying-glass text-muted oi-3x"></i>
                 </span>
             </div>
 
-            <!-- Search input -->
             <input class="form-control pl-4 focus-highlight" type="search" @bind="searchTerm" placeholder="Search" aria-label="Search" @bind:event="oninput" @onkeyup="async () => await SearchCustomers()">
 
-            <!-- Additional span with border on the right -->
+         
 
         </div>
     </div>
@@ -148,8 +147,7 @@ else
         }
         else
         {
-            // Handle the case where no product is selected for editing
-            // You might want to display a message or take appropriate action
+           
         }
     }
 
@@ -180,7 +178,7 @@ else
                     Text = "This action cannot be undone. Are you sure you want to delete the selected products?",
                     Icon = SweetAlertIcon.Warning,
                     ShowCancelButton = true,
-                    ConfirmButtonColor = "#d33", // Change confirm button color for warning
+                    ConfirmButtonColor = "#d33", 
                     ConfirmButtonText = "Yes, delete it!",
                     CancelButtonText = "No, cancel!",
                 });
@@ -189,30 +187,27 @@ else
             {
                 foreach (var customerId in selectedCustomers.ToList())
                 {
-                    // Send delete request for each product
+            
                     await CustomerService.DeleteCustomer(customerId);
                 }
 
-                // Clear the selected list after deletion
+              
                 selectedCustomers.Clear();
 
-                // Refresh the product list after deletion
+              
                 await LoadCustomers();
                 StateHasChanged();
 
-                // Show success alert
                 await Swal.FireAsync("Deleted!", "The selected products have been deleted.", SweetAlertIcon.Success);
             }
             else
             {
-                // Handle the case where the user cancels the deletion
-                // You might want to display a message or take appropriate action
+            
             }
         }
         else
         {
-            // Handle the case where no product is selected for deletion
-            // You might want to display a message or take appropriate action
+          
         }
     }
 
@@ -223,12 +218,12 @@ else
         {
             if (custCode == "-1")
             {
-                // Toggle all checkboxes based on master checkbox state
+         
                 selectedCustomers = isChecked ? CustomerService.PagedCustomers.Items.Select(p => p.CustCode).ToList() : new List<String>();
             }
             else
             {
-                // Toggle individual checkbox
+             
                 if (isChecked && !selectedCustomers.Contains(custCode))
                 {
                     selectedCustomers.Add(custCode);

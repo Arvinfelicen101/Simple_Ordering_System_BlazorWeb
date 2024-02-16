@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OrderingSystem.Server.Data;
 
@@ -11,9 +12,11 @@ using OrderingSystem.Server.Data;
 namespace OrderingSystem.Server.Migrations
 {
     [DbContext(typeof(OrderDataContext))]
-    partial class OrderDataContextModelSnapshot : ModelSnapshot
+    [Migration("20240212151653_RemovePriceOrderClass")]
+    partial class RemovePriceOrderClass
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

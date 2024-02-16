@@ -12,19 +12,19 @@ namespace OrderingSystem.Shared
     {
         [Key]
         public string CustCode { get; set; }
-        public string Fname { get; set; }
-        public string Mname { get; set; }
-        public string Lname { get; set; }
+        public string? Fname { get; set; }
+        public string? Mname { get; set; }
+        public string? Lname { get; set; }
 
-        public string FullName => $"{Fname} {Lname}";
+        public string? FullName => $"{Fname} {Lname}";
         public string BillAddress { get; set; }
         public string ShipAddress { get; set; }
         public string Email { get; set; }
         public string MobileNum { get; set; }
         public string HomeNum { get; set; }
 
-        public List<Order>? Orders { get; set; }
+        public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
-       
+
     }
 }

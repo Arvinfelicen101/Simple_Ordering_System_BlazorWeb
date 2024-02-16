@@ -6,7 +6,7 @@
 
 <style>
     .recently-updated {
-        background-color: #b5b3b3 /* Green color code */
+        background-color: #b5b3b3 
     }
 </style>
 
@@ -18,18 +18,17 @@
 
     <div class="d-flex ms-auto col-md-3">
         <div class="input-group position-relative ms-3 d-flex align-items-center">
-            <!-- Search input group -->
+       
             <div class="input-group-prepend">
-                <!-- Search icon -->
+            
                 <span class="input-group-text bg-transparent border-0">
                     <i class="oi oi-magnifying-glass text-muted oi-3x"></i>
                 </span>
             </div>
 
-            <!-- Search input -->
             <input class="form-control pl-4 focus-highlight" type="search" @bind="searchTerm" placeholder="Search" aria-label="Search" @bind:event="oninput" @onkeyup="async () => await SearchProducts()">
 
-            <!-- Additional span with border on the right -->
+         
            
         </div>
     </div>
@@ -130,24 +129,17 @@
             var newUpdatedProductIds = ProductService.GetRecentlyUpdatedProductIds().Except(previousUpdatedProductIds).ToList();
             if (newUpdatedProductIds.Any())
             {
-                // Introduce a delay (adjust the milliseconds as needed)
+            
                 await Task.Delay(500);
 
-                // Clear the previously updated product IDs in the ProductService
+              
                 ProductService.ClearRecentlyUpdatedProductIds();
             }
-
-          
-            // Log for debugging
             Console.WriteLine("Recently Updated Product IDs: " + string.Join(", ", ProductService.GetRecentlyUpdatedProductIds()));
-            // Clear the recently updated product IDs in the ProductService
-           
-            // Trigger a state change to force a re-render
-            
+
             
                 StateHasChanged();
-            
-           
+
         }
         catch (Exception ex)
         {
@@ -161,9 +153,6 @@
     {
         await LoadProducts();
     }
-
-  
-
 
     string FormatCurrency(decimal value)
     {
@@ -186,8 +175,7 @@
         }
         else
         {
-            // Handle the case where no product is selected for editing
-            // You might want to display a message or take appropriate action
+         
         }
     }
 
@@ -218,7 +206,7 @@
                     Text = "This action cannot be undone. Are you sure you want to delete the selected products?",
                     Icon = SweetAlertIcon.Warning,
                     ShowCancelButton = true,
-                    ConfirmButtonColor = "#d33", // Change confirm button color for warning
+                    ConfirmButtonColor = "#d33",
                     ConfirmButtonText = "Yes, delete it!",
                     CancelButtonText = "No, cancel!",
                 });
@@ -227,30 +215,27 @@
             {
                 foreach (var productId in selectedProducts.ToList())
                 {
-                    // Send delete request for each product
+                   
                     await ProductService.DeleteProduct(productId);
                 }
 
-                // Clear the selected list after deletion
                 selectedProducts.Clear();
 
-                // Refresh the product list after deletion
+              
                 await LoadProducts();
                 StateHasChanged();
 
-                // Show success alert
+             
                 await Swal.FireAsync("Deleted!", "The selected products have been deleted.", SweetAlertIcon.Success);
             }
             else
             {
-                // Handle the case where the user cancels the deletion
-                // You might want to display a message or take appropriate action
+               
             }
         }
         else
         {
-            // Handle the case where no product is selected for deletion
-            // You might want to display a message or take appropriate action
+           
         }
     }
 
@@ -261,12 +246,12 @@
         {
             if (ProdCode == "-1")
             {
-                // Toggle all checkboxes based on master checkbox state
+         
                 selectedProducts = isChecked ? ProductService.PagedProducts.Items.Select(p => p.ProdCode).ToList() : new List<string>();
             }
             else
             {
-                // Toggle individual checkbox
+       
                 if (isChecked && !selectedProducts.Contains(ProdCode))
                 {
                     selectedProducts.Add(ProdCode);

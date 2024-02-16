@@ -1,9 +1,9 @@
-﻿using OrderingSystem.Shared;
+﻿using OrderingSystem.Shared.ViewModels;
 
 namespace OrderingSystem.Client.Services.OrderService
 {
     public interface IOrderService
     {
-        Task CreateOrder(Order order);
+        Task CreateOrder(OrderViewModel orderViewModel);
     }
 }

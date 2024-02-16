@@ -4,6 +4,7 @@
 @inject IProductService ProductService
 @inject IOrderService OrderService
 @using OrderingSystem.Shared
+@using OrderingSystem.Shared.ViewModels;
 
 <div class="container bg-secondary p-5 rounded-3 text-white shadow mt-3 mb-5">
     <button class="btn btn-primary mb-3" @onclick="ShowCustomerModal"><i class="oi oi-eye text-white oi-3x"></i></button>
@@ -17,7 +18,7 @@
 
                     <div class="mb-3">
                         <label for="custcode" class="form-label">Customer Code</label>
-                        <InputText id="custcode" @bind-Value="Order.Customer.CustCode" class="form-control" readonly />
+                        <InputText id="custcode" @bind-Value="Order.CustomerCustCode" class="form-control" readonly />
                     </div>
                 </div>
 
@@ -88,7 +89,7 @@
     }
 
     <div class="modal" tabindex="-1" role="dialog" aria-labelledby="customerModalLabel" style="@(isCustomerModalOpen ? "display: block;" : "display: none;")">
-        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title text-black" id="customerModalLabel">Select Customer</h5>
@@ -99,18 +100,15 @@
                 <div class="modal-body">
                     <div class="d-flex ms-auto col-md-3">
                         <div class="input-group position-relative ms-3 d-flex align-items-center">
-                            <!-- Search input group -->
+                          
                             <div class="input-group-prepend">
-                                <!-- Search icon -->
+                           
                                 <span class="input-group-text bg-transparent border-0">
                                     <i class="oi oi-magnifying-glass text-muted oi-3x"></i>
                                 </span>
                             </div>
 
-                            <!-- Search input -->
                             <input class="form-control pl-4 focus-highlight" type="search" @bind="searchTerm" placeholder="Search" aria-label="Search" @bind:event="oninput" @onkeyup="async () => await SearchCustomers()">
-
-                            <!-- Additional span with border on the right -->
 
                         </div>
                     </div>
@@ -144,9 +142,10 @@
                             <tbody>
                                 @foreach (var customer in CustomerService.PagedCustomers.Items)
                                 {
+                                    var customerViewModel = ConvertToCustomerViewModel(customer);
                                     <tr class="@((CustomerService.GetRecentlyUpdatedCustomerIds().Contains(customer.CustCode)) ? "recently-updated" : "")">
                                         <td>
-                                            <input type="checkbox" checked="@(selectedCustomers != null && selectedCustomers.Contains(customer.CustCode))" @onchange="@((args) => ToggleSelectedCustomers(args, customer.CustCode))" />
+                                            <input type="checkbox" checked="@(selectedCustomers != null && selectedCustomers.Any(c => c.CustCode == customer.CustCode))" @onchange="@((args) => ToggleSelectedCustomers(args, customerViewModel))" />
                                         </td>
                                         <td>@customer.CustCode</td>
                                         <td>@customer.Fname</td>
@@ -157,7 +156,6 @@
                                         <td>@customer.Email</td>
                                         <td>@customer.MobileNum</td>
                                         <td>@customer.HomeNum</td>
-
                                     </tr>
                                 }
                             </tbody>
@@ -213,18 +211,17 @@
                 <div class="modal-body">
                     <div class="d-flex ms-auto col-md-3">
                         <div class="input-group position-relative ms-3 d-flex align-items-center">
-                            <!-- Search input group -->
+            
                             <div class="input-group-prepend">
-                                <!-- Search icon -->
+              
                                 <span class="input-group-text bg-transparent border-0">
                                     <i class="oi oi-magnifying-glass text-muted oi-3x"></i>
                                 </span>
                             </div>
 
-                            <!-- Search input -->
                             <input class="form-control pl-4 focus-highlight" type="search" @bind="searchTerm" placeholder="Search" aria-label="Search" @bind:event="oninput" @onkeyup="async () => await SearchProducts()">
 
-                            <!-- Additional span with border on the right -->
+               
 
                         </div>
                     </div>
@@ -242,7 +239,7 @@
                             <thead>
                                 <tr>
                                     <th class="text-nowrap">
-                                        <input type="checkbox" @bind="selectAllCheckedCustomers" @onclick="ToggleSelectAllProducts" />
+                                        <input type="checkbox" @bind="selectAllCheckedProducts" @onclick="ToggleSelectAllProducts" />
                                     </th>
                                     <th class="text-nowrap">Product Code</th>
                                     <th class="text-nowrap">Product Name</th>
@@ -253,9 +250,10 @@
                             <tbody>
                                 @foreach (var product in ProductService.PagedProducts.Items)
                                 {
+                                var productViewModel = ConvertToProductViewModel(product);
                                     <tr class="@((CustomerService.GetRecentlyUpdatedCustomerIds().Contains(product.ProdCode)) ? "recently-updated" : "")">
                                         <td>
-                                            <input type="checkbox" checked="@(selectedProducts != null && selectedProducts.Contains(product.ProdCode))" @onchange="@((args) => ToggleSelectedProducts(args, product.ProdCode))" />
+                                        <input type="checkbox" checked="@(selectedProducts != null && selectedProducts.Any(c => c.ProdCode == product.ProdCode))" @onchange="@((args) => ToggleSelectedProducts(args, productViewModel))" />
                                         </td>
                                     <td>@product.ProdCode</td>
                                     <td>@product.Name</td>
@@ -309,17 +307,17 @@
         <div class="col">
             <div class="shadow p-3 mb-5 bg-white rounded ">
                 <div class="d-flex justify-content-between">
-                    <button class="btn btn-primary mb-3 mt-4" @onclick="ShowOrderModal" disabled="@(Order.Customer == null || string.IsNullOrWhiteSpace(Order.Customer.CustCode))">
+                    <button class="btn btn-primary mb-3 mt-4" @onclick="ShowOrderModal" disabled="@(Order.Customer == null || string.IsNullOrWhiteSpace(Order.CustomerCustCode))">
                         <i class="oi oi-plus text-white oi-3x"></i>
                     </button>
 
                     <div class="d-flex align-items-center">
-                        <!-- Save button -->
+             
                         <div class="mr-2">
-                            <button type="button" class="btn btn-primary mx-2" @onclick="CreateOrder">Save</button>
+                            <button type="button" class="btn btn-primary mx-2" @onclick="CreateOrder">Submit</button>
                         </div>
 
-                        <!-- Cancel button -->
+            
                         <div>
                             <button type="button" class="btn btn-secondary">Cancel</button>
                         </div>
@@ -330,7 +328,7 @@
                     <thead>
                         <tr>
                             <th>
-                                <input type="checkbox" />
+                                <input type="checkbox" @bind="selectAllCheckedOrders" @onclick="ToggleSelectAllOrders" />
                             </th>
                             <th>Product Code</th>
                             <th>Description</th>
@@ -344,8 +342,8 @@
                         @foreach (var order in selectedOrders)
                         {
                             <tr>
-                                <td><input type="checkbox" /></td>
-                                <td>@order.Product.ProdCode</td>
+                                <td>      <input type="checkbox" checked="@(!selectedOrders.Contains(order) ? false : orderSelection.ContainsKey(order) ? orderSelection[order] : false)" @onchange="() => ToggleSelectedOrder(order)" /></td>
+                                <td>@order.ProductProdCode</td>
                                 <td>@order.Product.Name</td>
                                 <td>@order.Qty</td>
                                 <td>@String.Format("{0:N2}", order.Product.Price)</td>
@@ -399,7 +397,7 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="prodcode" class="form-label">Product Code</label>
-                                <InputText id="prodcode" @bind-Value="Order.Product.ProdCode" class="form-control" readonly />
+                                <InputText id="prodcode" @bind-Value="Order.ProductProdCode" class="form-control" readonly />
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -432,7 +430,7 @@
 
             <div class="modal-footer d-flex justify-content-end">
                 <button type="button" class="btn btn-secondary" @onclick="CloseOrderModal">Cancel</button>
-                <button type="button" class="btn btn-primary" @onclick="SelectOrder">Select</button>
+                <button type="button" class="btn btn-primary" @onclick="SelectOrder">Select</button> 
             </div>
         </div>
 
@@ -447,16 +445,18 @@
     private bool isCustomerModalOpen = false;
     private bool isProductModalOpen = false;
     private bool isOrderModalOpen = false;
-    private List<string> selectedCustomers = new List<string>();
-    private List<Order> selectedOrders = new List<Order>();
-    private List<string> selectedProducts = new List<string>();
+    private List<CustomerViewModel> selectedCustomers = new List<CustomerViewModel>();
+    private List<OrderViewModel> selectedOrders = new List<OrderViewModel>();
+    private List<ProductViewModel> selectedProducts = new List<ProductViewModel>();
     private bool selectAllCheckedCustomers;
     private bool selectAllCheckedProducts;
+    private bool selectAllCheckedOrders;
     private string searchTerm = string.Empty;
-    private string OrderCustomerFullName { get; set; } = "";
+    private Dictionary<OrderViewModel, bool> orderSelection = new Dictionary<OrderViewModel, bool>();
 
 
-    public OrderingSystem.Shared.Order Order { get; set; } = new();
+
+    public OrderViewModel Order = new ();
 
 
     protected override async Task OnInitializedAsync()
@@ -466,30 +466,67 @@
         await LoadCustomers();
         await LoadProducts();
 
+        Order = new OrderViewModel
+            {
+                Qty = 1,
+                OrderDate = DateTime.Today
+            };
 
-        // Make sure Order and its Customer are initialized
+
         if (Order == null)
         {
-            Order = new OrderingSystem.Shared.Order();
-        }
+            Order = new OrderViewModel();        }
 
         if (Order.Customer == null)
         {
-            Order.Customer = new OrderingSystem.Shared.Customer();
+            Order.Customer = new CustomerViewModel();
         }
 
         if (Order.Product == null)
         {
-            Order.Product = new OrderingSystem.Shared.Product();
+            Order.Product = new ProductViewModel();
         }
 
-        if (Order != null && Order.Customer != null)
-        {
-            // Concatenate the first name and last name and assign it to OrderCustomerFullName
-            OrderCustomerFullName = $"{Order.Customer.Fname} {Order.Customer.Lname}";
-        }
+
 
     }
+
+    private CustomerViewModel ConvertToCustomerViewModel(OrderingSystem.Shared.Customer customer)
+    {
+
+        CustomerViewModel customerViewModel = new CustomerViewModel
+            {
+                CustCode = customer.CustCode,
+                Fname = customer.Fname,
+                Mname = customer.Mname,
+                Lname = customer.Lname,
+                FullName = $"{customer.Fname} {customer.Lname}",
+                BillAddress = customer.BillAddress,
+                ShipAddress = customer.ShipAddress,
+                Email = customer.Email,
+                MobileNum = customer.MobileNum,
+                HomeNum = customer.HomeNum,
+          
+            };
+
+        return customerViewModel;
+    }
+
+
+    private ProductViewModel ConvertToProductViewModel(OrderingSystem.Shared.Product product)
+    {
+     
+        ProductViewModel productViewModel = new ProductViewModel
+            {
+                ProdCode = product.ProdCode,
+                Name = product.Name,
+                Price = product.Price,
+
+            };
+
+        return productViewModel;
+    }
+
 
     private async Task LoadCustomers(int page = 1, int pageSize = 10)
     {
@@ -506,14 +543,16 @@
         return $"₱{value.ToString("N2")}";
     }
 
-  
+
     private void ShowCustomerModal()
     {
         isCustomerModalOpen = true;
     }
 
     private void ShowProductModal()
+
     {
+        selectedProducts.Clear();
         isProductModalOpen = true;
     }
 
@@ -539,112 +578,102 @@
 
     private async Task CreateOrder()
     {
-      
-          await OrderService.CreateOrder(Order);
 
-          
+        await OrderService.CreateOrder(Order);
+
+
     }
 
 
-    private void ToggleSelectedOrder(ChangeEventArgs args, Order order)
+    private void ToggleSelectedOrder(OrderViewModel order)
     {
-        if (args.Value is bool isChecked)
+      
+        if (selectedOrders.Contains(order))
         {
- 
-            if (isChecked && !selectedOrders.Contains(order))
-            {
-                selectedOrders.Add(order);
-            }
-            else if (!isChecked && selectedOrders.Contains(order))
-            {
-                selectedOrders.Remove(order);
-            }
+        
+            orderSelection[order] = false;
         }
+        else
+        {
+     
+            orderSelection[order] = true;
+        }
+
+   
+
     }
 
+    private async Task SelectOrder()
+    {
+        var existingOrder = selectedOrders.FirstOrDefault(o => o.ProductProdCode == Order.ProductProdCode);
 
+        if (existingOrder != null)
+        {
+            existingOrder.Qty += Order.Qty;
+        }
+        else
+        {
+            selectedOrders.Add(Order);
+        }
+        Order = new OrderViewModel
+            {
+                Customer = Order.Customer,
+                CustomerCustCode = Order.CustomerCustCode,
+                Qty = Order.Qty,
+                OrderDate = Order.OrderDate,
+        
+                Product = new ProductViewModel() 
+            };
+
+  
+        CloseOrderModal();
+    }
 
     private async Task SelectCustomer()
     {
         if (selectedCustomers.Any())
         {
-            // Assuming Customer is your shared type
-            foreach (var selectedCustomer in selectedCustomers)
-            {
-                OrderingSystem.Shared.Customer sharedCustomer = await ConvertToLocalCustomerToSharedCustomer(selectedCustomer);
+        
+            var selectedCustomer = selectedCustomers.First();
 
-                // Assign the shared customer to Order.Customer
-                Order.Customer = sharedCustomer;
-            }
-           
+            Order.CustomerCustCode = selectedCustomer.CustCode;
+
+            Order.Customer.FullName = $"{selectedCustomer.Fname} {selectedCustomer.Lname}";
+
+            Order.Customer.BillAddress = selectedCustomer.BillAddress;
+
+            Order.Customer.ShipAddress = selectedCustomer.ShipAddress;
+
+            Order.Customer.MobileNum = selectedCustomer.MobileNum;
+
+            Order.Customer.HomeNum = selectedCustomer.HomeNum;
+
         }
+
         CloseCustomerModal();
-    }  
-    
+    }
+
     private async Task SelectProduct()
     {
         if (selectedProducts.Any())
         {
-            // Assuming Customer is your shared type
-            foreach (var selectedProduct in selectedProducts)
-            {
-                OrderingSystem.Shared.Product sharedProduct = await ConvertToLocalProductToSharedProduct(selectedProduct);
+       
+            var selectedProduct = selectedProducts.First();
 
-           
-                // Assign the shared customer to Order.Customer
-                Order.Product = sharedProduct;
-            }
+         
+            Order.ProductProdCode = selectedProduct.ProdCode;
+
+            Order.Product.Name = selectedProduct.Name;
+
+            Order.Product.Price = selectedProduct.Price;
 
         }
+
         CloseProductModal();
     }
 
-    private async Task SelectOrder()
-    {
-        // Here you can add the selected order to the list of selected orders
-        // For example:
-        selectedOrders.Add(Order);
-        CloseOrderModal();
-    }
 
-    private async Task<OrderingSystem.Shared.Customer> ConvertToLocalCustomerToSharedCustomer(string localCustomerCode)
-    {
-        // Fetch the local customer based on the code
-        var localCustomer = await CustomerService.GetCustomerById(localCustomerCode);
-        string fullName = $"{localCustomer.Fname} {localCustomer.Lname}";
 
-        // Perform the necessary conversion logic
-        // For example, if the properties are the same, you might just instantiate a new SharedCustomer
-        return new OrderingSystem.Shared.Customer
-            {
-                CustCode = localCustomer.CustCode,
-                
-                Fname = localCustomer.Fname,
-                Mname = localCustomer.Mname,
-                Lname = localCustomer.Lname,
-                BillAddress = localCustomer.BillAddress,
-                ShipAddress = localCustomer.ShipAddress,
-                Email = localCustomer.Email,
-                MobileNum = localCustomer.HomeNum,
-                HomeNum = localCustomer.HomeNum,
-                // Copy other properties as needed
-            };
-    }
-
-    private async Task<OrderingSystem.Shared.Product> ConvertToLocalProductToSharedProduct(string localProductCode)
-    {
-        // Fetch the local customer based on the code
-        var localProduct = await ProductService.GetProductById(localProductCode);
-        // Perform the necessary conversion logic
-        // For example, if the properties are the same, you might just instantiate a new SharedCustomer
-        return new OrderingSystem.Shared.Product
-            {
-                ProdCode = localProduct.ProdCode,
-                Name = localProduct.Name,
-                Price = localProduct.Price
-            };
-    }
-    
     private async Task SearchCustomers()
     {
         await LoadCustomers();
@@ -655,21 +684,35 @@
         await LoadProducts();
     }
 
-    private void ToggleSelectedCustomers(ChangeEventArgs args, String custCode)
+    private void ToggleSelectedCustomers(ChangeEventArgs args, CustomerViewModel custCode)
     {
         if (args.Value is bool isChecked)
         {
-            if (custCode == "-1")
+            if (custCode.CustCode == "-1") 
             {
-                selectedCustomers = isChecked ? CustomerService.PagedCustomers.Items.Select(p => p.CustCode).ToList() : new List<String>();
+                selectedCustomers = isChecked
+                    ? CustomerService.PagedCustomers.Items
+                        .Select(item => new CustomerViewModel(
+                            item.CustCode,
+                            item.Fname,
+                            item.Lname,
+                            item.Mname,
+                            item.BillAddress,
+                            item.ShipAddress,
+                            item.Email,
+                            item.MobileNum,
+                            item.HomeNum
+                            ))
+                        .ToList()
+                    : new List<CustomerViewModel>();
             }
             else
             {
-                if (isChecked && !selectedCustomers.Contains(custCode))
+                if (isChecked && !selectedCustomers.Any(c => c.CustCode == custCode.CustCode))
                 {
                     selectedCustomers.Add(custCode);
                 }
-                else if (!isChecked && selectedCustomers.Contains(custCode))
+                else if (!isChecked && selectedCustomers.Any(c => c.CustCode == custCode.CustCode))
                 {
                     selectedCustomers.Remove(custCode);
                 }
@@ -677,13 +720,18 @@
         }
     }
 
-    private void ToggleSelectedProducts(ChangeEventArgs args, String prodCode)
+    private void ToggleSelectedProducts(ChangeEventArgs args, ProductViewModel prodCode)
     {
         if (args.Value is bool isChecked)
         {
-            if (prodCode == "-1")
+            if (prodCode.ProdCode == "-1")
             {
-                selectedProducts = isChecked ? ProductService.PagedProducts.Items.Select(p => p.ProdCode).ToList() : new List<String>();
+                selectedProducts = isChecked ? ProductService.PagedProducts.Items.Select(item => new ProductViewModel (
+                    item.ProdCode,
+                    item.Name,
+                    item.Price
+                ))
+                .ToList() : new List<ProductViewModel>();
             }
             else
             {
@@ -705,12 +753,40 @@
 
         if (selectAllCheckedCustomers)
         {
-            selectedCustomers = CustomerService.PagedCustomers.Items.Select(p => p.CustCode).ToList();
+            selectedCustomers =
+                      CustomerService.PagedCustomers.Items
+                         .Select(item => new CustomerViewModel(
+                             item.CustCode,
+                             item.Fname,
+                             item.Lname,
+                             item.Mname,
+                             item.BillAddress,
+                             item.ShipAddress,
+                             item.Email,
+                             item.MobileNum,
+                             item.HomeNum))
+                         .ToList();
+
         }
         else
         {
             selectedCustomers.Clear();
         }
+    }
+
+    private void ToggleSelectAllOrders()
+    {
+ 
+        selectAllCheckedOrders = !selectAllCheckedOrders;
+
+       
+        foreach (var order in selectedOrders)
+        {
+           
+            orderSelection[order] = selectAllCheckedOrders;
+        }
+
+
     }
 
     private void ToggleSelectAllProducts()
@@ -719,7 +795,11 @@
 
         if (selectAllCheckedProducts)
         {
-            selectedProducts = ProductService.PagedProducts.Items.Select(p => p.ProdCode).ToList();
+            selectedProducts = ProductService.PagedProducts.Items.Select(item => new ProductViewModel(
+            item.ProdCode,
+            item.Name,
+            item.Price
+            )).ToList();
         }
         else
         {
