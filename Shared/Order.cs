@@ -22,6 +22,15 @@ namespace OrderingSystem.Shared
         public virtual Product? Product { get; set; }
 
         public int Qty { get; set; }
-       
+        public decimal Price { get; set; }
+
+        public decimal Disc { get; set; }
+
+        public decimal TotPrice { get; set; }
+
+        public decimal DPrice { get; set; }
+
+        public int RowNo { get; set; }
+
     }
 }

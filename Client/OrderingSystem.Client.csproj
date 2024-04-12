@@ -27,4 +27,8 @@
     <ProjectReference Include="..\Shared\OrderingSystem.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\fonts\" />
+  </ItemGroup>
+
 </Project>

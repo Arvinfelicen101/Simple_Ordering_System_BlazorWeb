@@ -14,8 +14,20 @@ namespace OrderingSystem.Shared.ViewModels
         public string CustomerCustCode { get; set; }
         public string ProductProdCode { get; set; }
         public int Qty { get; set; }
+
+        public decimal Price { get; set; }
+
+        public decimal Disc { get; set; }
+
+        public decimal TotPrice { get; set; }
+
+        public decimal DPrice { get; set; }
+        public int RowNo { get; set; }
         public CustomerViewModel Customer { get; set; }
         public ProductViewModel Product { get; set; }
+
+        
+
     }
 
 }

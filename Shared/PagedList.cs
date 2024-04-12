@@ -8,6 +8,7 @@ namespace OrderingSystem.Shared
 {
     public class PagedList<T>
     {
+      
         public List<T> Items { get; set; }
         public int TotalItems { get; set; }
         public int CurrentPage { get; set; }
@@ -22,5 +23,7 @@ namespace OrderingSystem.Shared
             CurrentPage = currentPage;
             PageSize = pageSize;
         }
+
+       
     }
 }

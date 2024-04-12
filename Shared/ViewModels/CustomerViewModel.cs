@@ -17,26 +17,11 @@ namespace OrderingSystem.Shared.ViewModels
         public string? BillAddress { get; set; }
         public string? ShipAddress { get; set; }
         public string? Email { get; set; }
-        public string MobileNum { get; set; }
-        public string HomeNum { get; set; }
+        public string? MobileNum { get; set; }
+        public string? HomeNum { get; set; }
 
 
-        public static CustomerViewModel FromCustomer(Customer customer)
-        {
-            return new CustomerViewModel
-            {
-                CustCode = customer.CustCode,
-                FullName = $"{customer.Fname} {customer.Lname}",
-                Fname = customer.Fname,
-                Mname = customer.Mname,
-                Lname = customer.Lname,
-                BillAddress = customer.BillAddress,
-                ShipAddress = customer.ShipAddress,
-                Email = customer.Email,
-                MobileNum = customer.MobileNum,
-                HomeNum = customer.HomeNum
-            };
-        }
+        
 
         public CustomerViewModel
             ()

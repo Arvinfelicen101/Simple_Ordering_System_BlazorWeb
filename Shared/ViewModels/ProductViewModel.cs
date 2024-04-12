@@ -12,15 +12,7 @@ namespace OrderingSystem.Shared.ViewModels
         public string Name { get; set; }
         public decimal Price { get; set; }
 
-        public static ProductViewModel FromProduct(Product product)
-        {
-            return new ProductViewModel
-            {
-                ProdCode = product.ProdCode,
-                Name = product.Name,
-                Price = product.Price
-            };
-        }
+      
         public ProductViewModel()
         {
             

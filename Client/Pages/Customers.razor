@@ -10,7 +10,8 @@
     }
 </style>
 
-<h3>Customers</h3>
+<div class="container">
+<h3>List of Customers</h3>
 <div class="mb-3 mt-5 d-flex">
     <button class="btn btn-primary me-1" @onclick="CreateNewCustomer"><i class="oi oi-plus text-white oi-3x"></i></button>
     <button class="btn btn-danger mx-1" @onclick="DeleteSelectedCustomers" disabled="@(selectedCustomers.Count == 0)"><i class="oi oi-trash text-white oi-3x"></i></button>
@@ -102,13 +103,14 @@
         </ul>
     </nav>
 
+
 }
 else
 {
     <p>Loading...</p>
 }
 
-
+</div>
 @code {
     private List<string> selectedCustomers = new List<string>();
     private bool selectAllChecked;

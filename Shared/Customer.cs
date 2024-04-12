@@ -20,8 +20,8 @@ namespace OrderingSystem.Shared
         public string BillAddress { get; set; }
         public string ShipAddress { get; set; }
         public string Email { get; set; }
-        public string MobileNum { get; set; }
-        public string HomeNum { get; set; }
+        public string? MobileNum { get; set; }
+        public string? HomeNum { get; set; }
 
         public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 

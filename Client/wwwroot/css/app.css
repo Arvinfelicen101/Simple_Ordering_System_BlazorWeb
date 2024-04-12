@@ -1,7 +1,13 @@
 @import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
+@font-face {
+    font-family: "Poppins";
+    src: url('../fonts/Poppins-Regular.ttf')
+}
+
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Poppins', Helvetica, Arial, sans-serif;
+    font-size: 14px;
 }
 
 h1:focus {
@@ -99,3 +105,48 @@ a, .btn-link {
     .loading-progress-text:after {
         content: var(--blazor-load-percentage-text, "Loading");
     }
+
+
+/* .nav-link {
+    position: relative;
+    
+}
+
+    .nav-link::after {
+        content: '';
+        opacity: 0;
+        transition: all 0.2s;
+        height: 5px;
+        width: 100%;
+        background-color: black;
+        position: absolute;
+        bottom: -6px;
+        left: 0;
+    }
+
+.nav-link:hover::after {
+   opacity: 1;
+}
+ 
+
+    */
+
+.dropdown .dropdown-menu {
+    display: none;
+}
+
+.dropdown:hover > .dropdown-menu, .dropend:hover > .dropdown-menu {
+    display: block;
+    margin-top: .125em;
+}
+
+@media screen and (min-width:769px) {
+    .dropend:hover > .dropdown-menu {
+        position: absolute;
+        top: 0;
+        left: 100%;
+        margin-left: .125em;
+    }
+}
+
+

@@ -1,5 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Update;
 using OrderingSystem.Shared;
+using System.ComponentModel;
+using System.Reflection;
+
 
 namespace OrderingSystem.Server.Data
 {
@@ -12,11 +18,8 @@ namespace OrderingSystem.Server.Data
         public DbSet<Customer> Customers { get; set; }
 
         public DbSet<Order> Orders { get; set; }
-
-
-     
-
-    }
+      
+}
 }
 
 
