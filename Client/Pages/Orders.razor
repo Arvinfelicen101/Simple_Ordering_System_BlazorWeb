@@ -19,12 +19,10 @@
             <div class="d-flex">
                
                 <div>
-                    <input class="form-control pl-4 mx-2 focus-highlight" type="search" @bind="searchOrderNo" placeholder="Search Order No." aria-label="Search">
+                    <!--<input class="form-control pl-4 mx-2 focus-highlight" type="search" @bind="searchOrderNo" placeholder="Search Order No." aria-label="Search">-->
                 </div>
                
-            <div>
-                <button class="btn btn-primary mx-3" @onclick="SearchOrder"><i class="oi oi-magnifying-glass text-white oi-3x"></i></button>
-            </div>
+    
             </div>
         </div>
     </div>
@@ -42,15 +40,16 @@
 
                         <label for="custcode" class="form-label">Customer Code</label>
                         <div class="d-flex">
-                        <button class="btn btn-primary mx-1" @onclick="ShowCustomerModal"><i class="oi oi-eye text-white oi-3x"></i></button>
+                       
                             @if (searchedOrders != null && searchedOrders.Any())
                             {
-                                <InputText id="custcode" @bind-Value="searchedOrders[0].CustomerCustCode" class="form-control" readonly />
+                                <InputText id="custcode" @bind-Value="searchedOrders[0].Customer.CustCode" class="form-control" readonly />
                             }
                             else
                             {
                                 <InputText id="custcode" @bind-Value="Order.CustomerCustCode" class="form-control" readonly />
                             }
+                            <button class="btn btn-primary mx-1" @onclick="ShowCustomerModal"><i class="oi oi-eye text-white oi-3x"></i></button>
                         </div>
                     </div>
                 </div>
@@ -87,24 +86,24 @@
                 </div>
 
 
-                <div class="col-md-3">
-                    <div class="mb-3">
-                        <label for="orderno" class="form-label">Order No.</label>
-                        <div class="d-flex">
-                         
-                            @if (searchedOrders != null && searchedOrders.Any())
-                            {
-                                <InputNumber id="orderno" @bind-Value="searchedOrders[0].OrderNo" class="form-control" readonly />
-                            }
-                            else
-                            {
-                                <InputNumber id="orderno" @bind-Value="Order.OrderNo" class="form-control"  />
-                            }
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label for="orderno" class="form-label">Order No.</label>
+                            <div class="d-flex">
                             
-                        </div>
-                        
+                                @if (searchedOrders != null && searchedOrders.Any())
+                                {
+
+                                <InputNumber id="orderno" @bind-Value="searchedOrders[0].OrderNo" @oninput="UpdateSearchOrderNo" class="form-control" />
+                                }
+                                else
+                                {
+                                <InputNumber id="orderno" @bind-Value="Order.OrderNo" @oninput="UpdateSearchOrderNo" class="form-control" />
+                                }
+                                <button class="btn btn-primary mx-1" @onclick="SearchOrder"><i class="oi oi-magnifying-glass text-white oi-3x"></i></button>
+                            </div>
+                        </div>  
                     </div>
-                </div>
 
 
                 <div class="col-md-3">
@@ -489,11 +488,11 @@
                   
                     <button class="btn btn-primary mb-3 mt-4" @onclick="DisplayOrderModal"
                             disabled="@(string.IsNullOrWhiteSpace(Order.CustomerCustCode) &&
-                   (searchedOrders == null || searchedOrders[0].OrderNo == 0))">
+                   (searchedOrders == null || searchedOrders[0].OrderNo == 0 || Order.OrderNo == 0))">
                         <i class="oi oi-plus text-white oi-3x"></i>
                     </button>
 
-                    @if (string.IsNullOrWhiteSpace(Order.CustomerCustCode) || (searchedOrders == null || searchedOrders[0].OrderNo == 0))
+                   <!-- @if (string.IsNullOrWhiteSpace(Order.CustomerCustCode) || (searchedOrders == null || searchedOrders[0].OrderNo == 0))
                     {
                         Console.WriteLine("Order.CustomerCustCode: " + Order.CustomerCustCode);
                         if (searchedOrders != null && searchedOrders.Any())
@@ -504,13 +503,16 @@
                         {
                             Console.WriteLine("searchedOrders is null or empty");
                         }
-                    }
+                    } -->
 
                     <div class="d-flex align-items-center">
-             
-                        <div>
-                            <button type="button" class="btn btn-primary mx-3" @onclick="() => CreateOrder()" disabled="@((Order.Customer == null || string.IsNullOrWhiteSpace(Order.CustomerCustCode)) || (searchedOrders != null && searchedOrders.Any()))">Submit</button>
-                        </div>
+
+                        @if (searchedOrders == null || !searchedOrders.Any())
+                        {
+                            <div>
+                                <button type="button" class="btn btn-primary mx-3" @onclick="() => CreateOrder()">Submit</button>
+                            </div>
+                        }
                     </div>
                 </div>
 
@@ -561,6 +563,10 @@
                                     </td>
                                 </tr>
                             }
+                        }
+                        else
+                        {
+                            
                         }
                     </tbody>
                 </table>
@@ -669,7 +675,7 @@
 @code {
     bool isAddingOrder = false;
     private List<OrderViewModel> orders;
-    private string searchOrderNo, customerCustCode;
+    private string searchOrderNo,customerCustCode;
 
     private List<OrderViewModel> searchedOrders;
     private bool isCustomerModalOpen = false;
@@ -703,14 +709,30 @@
         await LoadCustomers();
         await LoadProducts();
 
+        /*Order = new OrderViewModel
+        {
+        Qty = 1,
+        OrderDate = DateTime.Today
+    };*/
 
+        int latestOrderNo = await OrderService.GetLatestOrderNumber();
 
-        Order = new OrderViewModel
-            {
-                Qty = 1,
-                OrderDate = DateTime.Today
-            };
+        searchedOrders = OrderService.PagedOrder.Where(order => order.OrderNo == latestOrderNo).ToList();
 
+        if (searchedOrders == null || !searchedOrders.Any())
+        {
+            // Initialize Order only if searchedOrders is null or empty
+            Order = new OrderViewModel
+                {
+                    Qty = 1,
+                    OrderDate = DateTime.Today
+                };
+        }
+        else
+        {
+            // Assign the latest order to the Order property
+            Order = searchedOrders.First();
+        }
 
         if (Order == null)
         {
@@ -829,23 +851,37 @@
     }
 
 
-    private void DisplayOrderModal()
+    private async Task DisplayOrderModal()
     {
-        if (Order != null && Order.OrderNo > 0)
-        {
-            // Check if the order number exists in the client-side data
-            bool orderExists = OrderService.PagedOrder.Any(order => order.OrderNo == Order.OrderNo);
+        
 
+        var orders = await OrderService.GetOrders();
+
+       
+
+        if (Order != null)
+        {
+            // Get the inputted OrderNo
+            bool orderExists = orders.Any(order => order.OrderNo == Order.OrderNo);
+
+            // Log the result of orderExists check
+           
+
+            // Check if the OrderNo already exists in the database
             if (orderExists)
             {
                 // Display an error message using SweetAlert
-                Swal.FireAsync(new SweetAlertOptions
+                await Swal.FireAsync(new SweetAlertOptions
                     {
                         Title = "Error",
-                        Text = "Order number already exists. Please use different order number",
+                        Text = "Order number already exists in the database. Please use a different order number.",
                         Icon = SweetAlertIcon.Error
                     });
-                return; // Exit the method
+            }
+            else
+            {
+                // Open the order modal
+                isOrderModalOpen = true;
             }
         }
 
@@ -858,7 +894,7 @@
             Order.Product.Name = null;
         }
 
-        isOrderModalOpen = true;
+        Console.WriteLine("Exiting DisplayOrderModal...");
     }
 
 
@@ -915,10 +951,16 @@
         // Check if the user confirmed
         if (result.IsConfirmed)
         {
+
+          
+            
             Console.WriteLine("Order No before order creation: " + Order.OrderNo);
 
-            await OrderService.CreateOrder(selectedOrders);
-            await LoadOrders();
+            await OrderService.CreateOrder(selectedOrders, 0);
+            
+            int latestOrderNo = await OrderService.GetLatestOrderNumber();
+            searchedOrders = OrderService.PagedOrder.Where(order => order.OrderNo == latestOrderNo).ToList();
+            Console.WriteLine($"Latest Row Number: {latestOrderNo}");
 
             // Display success message
             await Swal.FireAsync(new SweetAlertOptions
@@ -927,8 +969,11 @@
                     Text = "Order created successfully!",
                     Icon = SweetAlertIcon.Success
                 });
+
+            StateHasChanged();
         }
     }
+
 
 
 
@@ -1127,19 +1172,16 @@
                     // Log a message to verify execution
                     Console.WriteLine("Order added successfully.");
 
-                    // Reload orders
-                    await OrderService.GetOrders();
 
-                    searchedOrders = await OrderService.GetOrders();
-
-                    // Log a message to verify orders are reloaded
-                    Console.WriteLine("Orders reloaded successfully.");
+                    // Get the specific order based on row number, product code, and order number
+                    searchedOrders.Clear();
+                    searchedOrders = await OrderService.GetOrdersByOrderNum(selectedOrder.OrderNo);
+                    //PROBLEM, NOT REFRESHING WELL
 
                     // Trigger UI update
                     StateHasChanged();
                     isAddingOrder = false;
                 }
-              
             }
 
 
@@ -1358,7 +1400,7 @@
 
 
                     /*
-                    * async Task EditOrderViewModel(int rowNo, string productProdCodeToEdit, int orderNo)
+                * async Task EditOrderViewModel(int rowNo, string productProdCodeToEdit, int orderNo)
             {
             Console.WriteLine("EditOrderViewModel called with rowNo: " + rowNo);
 
@@ -1424,33 +1466,55 @@
 
     private async void ResetState()
     {
-        // Reset the state
-        if (searchedOrders != null && searchedOrders.Any())
+        if (searchedOrders != null && searchedOrders.Count > 0)
         {
+            // Iterate over each item in searchedOrders
+            foreach (var order in searchedOrders)
+            {
+                // Clear the properties of the current order
+                order.Customer.CustCode = null;
+                order.Customer.FullName = null;
+                order.Customer.BillAddress = null;
+                order.OrderNo = await GetNextOrderNumber(); // Get the next order number
+                order.Customer.ShipAddress = null;
+                order.OrderDate = DateTime.Today;
+            }
+
+            // Clear the searchedOrders list
             searchedOrders.Clear();
         }
-        else
-        {
-            Order = new OrderViewModel
-                {
-                    Customer = new CustomerViewModel(),
-                    Product = new ProductViewModel(),
-                    Qty = 1,
-                    OrderNo = 0,
-                    OrderDate = DateTime.Today
-                };
 
+        if ((Order != null && Order.Customer != null))
+        {
+
+            Order.Customer.FullName = null;
+            Order.Customer.BillAddress = null;
+            Order.Customer.ShipAddress = null;
+            Order.OrderNo = await GetNextOrderNumber();
+            Order.OrderDate = DateTime.Today;
             selectedOrders.Clear();
-            selectedProduct = null;
-            selectedCustomer = null;
         }
 
+
+        
         // Trigger a re-render to refresh the UI
         StateHasChanged();
+    } 
+    
+    private async Task<int> GetNextOrderNumber()
+    {
+        // Get the latest order number
+        int latestOrderNo = await OrderService.GetLatestOrderNumber();
+
+        // Increment the latest order number
+        int nextOrderNo = latestOrderNo + 1;
+
+        return nextOrderNo;
     }
 
     private async Task SearchOrder()
     {
+    
         try
         {
             // Check if the searchOrderNo is empty
@@ -1574,6 +1638,24 @@
                     Icon = SweetAlertIcon.Success
                 });
         }
+    }
+
+    private void UpdateSearchOrderNo(ChangeEventArgs e)
+    {
+        if ((Order != null && Order.Customer != null))
+        {
+
+            Order.Customer.FullName = null;
+            Order.Customer.BillAddress = null;
+            Order.Customer.ShipAddress = null;
+            Order.OrderDate = DateTime.Today;
+            selectedOrders.Clear();
+        }
+        // Update the searchOrderNo variable with the new value from the input field
+        searchOrderNo = e.Value.ToString();
+
+        // Call any other logic you need here, such as triggering a search
+       
     }
 
     

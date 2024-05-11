@@ -12,11 +12,12 @@ namespace OrderingSystem.Client.Services.OrderService
         List<OrderViewModel> PagedOrder { get; set; }
 
         Task<List<OrderViewModel>> GetOrders();
-        Task CreateOrder(IEnumerable<OrderViewModel> OrderViewModel);
+        Task CreateOrder(IEnumerable<OrderViewModel> OrderViewModel, int pOrderNo);
 
         Task AddOrder(OrderViewModel orderViewModel);
         Task<OrderViewModel> SearchOrder(string searchTerm);
         Task<List<OrderViewModel>> GetOrdersByOrderNo(string orderNo);
+        Task<List<OrderViewModel>> GetOrdersByOrderNum(int orderNo);
 
         Task UpdateOrder(string productProdCode, OrderViewModel orderViewModelToUpdate);
         Task<OrderViewModel> GetOrderByRowCodeOrderNo(int rowNo, string productProdCode, int orderNo);
@@ -26,5 +27,7 @@ namespace OrderingSystem.Client.Services.OrderService
         Task DeleteOrder(int rowNo, string productProdCode, int orderNo);
 
         Task<int> GetNextRowNo(int orderNo);
+
+        Task<int> GetLatestOrderNumber();
     }
 }

@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+
 using OrderingSystem.Server.Data;
 using OrderingSystem.Shared;
 using OrderingSystem.Shared.ViewModels;
@@ -118,58 +120,69 @@ namespace OrderingSystem.Server.Controllers
 
 
         [HttpPost]
-        public async Task<ActionResult<IEnumerable<OrderViewModel>>> CreateOrders(IEnumerable<OrderViewModel> orderViewModels)
+        public async Task<ActionResult<IEnumerable<OrderViewModel>>> CreateOrders(IEnumerable<OrderViewModel> orderViewModels, int pOrderNo)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-           // int nextRowNo = await GetNextRowNo();
-
-            foreach (var orderViewModel in orderViewModels)
+            try
             {
-                var existingCustomer = await _context.Customers.FindAsync(orderViewModel.CustomerCustCode);
-                if (existingCustomer == null)
+                // Get the latest OrderNo
+                int latestOrderNo = await _context.Orders.MaxAsync(o => (int?)o.OrderNo) ?? 0;
+                latestOrderNo++;
+
+                foreach (var orderViewModel in orderViewModels)
                 {
-                    return BadRequest($"Invalid customer code for order with OrderNo {orderViewModel.OrderNo}.");
+                    var existingCustomer = await _context.Customers.FindAsync(orderViewModel.CustomerCustCode);
+                    if (existingCustomer == null)
+                    {
+                        return BadRequest($"Invalid customer code for order with OrderNo {orderViewModel.OrderNo}.");
+                    }
+
+                    var existingProduct = await _context.Products.FindAsync(orderViewModel.ProductProdCode);
+                    if (existingProduct == null)
+                    {
+                        return BadRequest($"Invalid product code for order with OrderNo {orderViewModel.OrderNo}.");
+                    }
+
+                    // Increment the latest OrderNo
+                    orderViewModel.OrderNo = latestOrderNo;
+
+                    var order = new Order
+                    {
+                        RowNo = orderViewModel.RowNo,
+                        OrderNo = orderViewModel.OrderNo,
+                        OrderDate = orderViewModel.OrderDate,
+                        Customer = existingCustomer,
+                        Product = existingProduct,
+                        Qty = orderViewModel.Qty,
+                        Price = orderViewModel.Price
+                    };
+
+                    Console.WriteLine($"Creating Order: {order}");
+
+                    await _context.Orders.AddAsync(order);
                 }
 
-                var existingProduct = await _context.Products.FindAsync(orderViewModel.ProductProdCode);
-                if (existingProduct == null)
-                {
-                    return BadRequest($"Invalid product code for order with OrderNo {orderViewModel.OrderNo}.");
-                }
-                
-               // orderViewModel.RowNo = nextRowNo++;
+                await _context.SaveChangesAsync();
 
-                var order = new Order
+                return new ObjectResult(orderViewModels)
                 {
-                    RowNo = orderViewModel.RowNo,
-                    OrderNo = orderViewModel.OrderNo,
-                    OrderDate = orderViewModel.OrderDate,
-                    Customer = existingCustomer,
-                    Product = existingProduct,
-                    Qty = orderViewModel.Qty,
-                    Price = orderViewModel.Price
+                    StatusCode = 201,
+                    Value = orderViewModels
                 };
-
-
-                Console.WriteLine($"Creating Order: {order}");
-
-
-                await _context.Orders.AddAsync(order);
-              
             }
-
-            await _context.SaveChangesAsync();
-
-            return new ObjectResult(orderViewModels)
+            catch (Exception ex)
             {
-                StatusCode = 201,
-                Value = orderViewModels
-            };
+                Console.WriteLine($"Error creating orders: {ex.Message}");
+                return StatusCode(500, "Internal Server Error");
+            }
         }
+
+
+
 
         [HttpPost("add-order")]
         public async Task<ActionResult<OrderViewModel>> CreateOrder(OrderViewModel orderViewModel)
@@ -245,6 +258,21 @@ namespace OrderingSystem.Server.Controllers
             }
         }
 
+        [HttpGet("latest-order-number")]
+        public async Task<ActionResult<int>> GetLatestOrderNumber()
+        {
+            try
+            {
+                int latestOrderNo = await _context.Orders.MaxAsync(o => (int?)o.OrderNo) ?? 0;
+               
+                return Ok(latestOrderNo);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting latest order number: {ex.Message}");
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
 
         [HttpGet("searchOrders")]
         public async Task<ActionResult<OrderViewModel>> SearchOrder(string searchTerm)
@@ -292,6 +320,56 @@ namespace OrderingSystem.Server.Controllers
                     .Select(order => new OrderViewModel
                     {
                        RowNo = order.RowNo,
+                        OrderNo = order.OrderNo,
+                        CustomerCustCode = order.CustomerCustCode,
+                        ProductProdCode = order.ProductProdCode,
+                        OrderDate = order.OrderDate,
+                        Qty = order.Qty,
+                        Price = order.Price,
+                        Customer = new CustomerViewModel
+                        {
+                            CustCode = order.Customer.CustCode,
+                            FullName = order.Customer.FullName,
+                            BillAddress = order.Customer.BillAddress,
+                            ShipAddress = order.Customer.ShipAddress,
+                            // Map other customer properties as needed
+                        },
+                        Product = new ProductViewModel
+                        {
+                            ProdCode = order.Product.ProdCode,
+                            Name = order.Product.Name,
+                        }
+                        // Map other properties as needed
+                    })
+                    .ToListAsync();
+
+                if (orders == null || orders.Count == 0)
+                {
+                    return NotFound();
+                }
+
+                return Ok(orders);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception: {ex.Message}");
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
+
+        [HttpGet("orderbyNo")]
+        public async Task<ActionResult<List<OrderViewModel>>> GetOrdersByOrderNum(int orderNo)
+        {
+            try
+            {
+                var orders = await _context.Orders
+                    .Include(o => o.Customer)
+                    .Include(o => o.Product)
+                    .Where(o => o.OrderNo == orderNo)
+                    .OrderBy(o => o.RowNo)
+                    .Select(order => new OrderViewModel
+                    {
+                        RowNo = order.RowNo,
                         OrderNo = order.OrderNo,
                         CustomerCustCode = order.CustomerCustCode,
                         ProductProdCode = order.ProductProdCode,

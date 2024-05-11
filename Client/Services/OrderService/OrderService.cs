@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
-using OrderingSystem.Client.Pages;
+
 using OrderingSystem.Shared;
 using OrderingSystem.Shared.ViewModels;
 using System.Net.Http.Json;
@@ -24,10 +24,18 @@ namespace OrderingSystem.Client.Services.OrderService
         // public PagedList<OrderViewModel> PagedOrders { get; set; }
 
 
-        public async Task CreateOrder(IEnumerable<OrderViewModel> OrderViewModel)
+        public async Task CreateOrder(IEnumerable<OrderViewModel> orderViewModels, int pOrderNo)
         {
-            HttpResponseMessage response = await _http.PostAsJsonAsync("api/order", OrderViewModel);
-            response.EnsureSuccessStatusCode();
+            try
+            {
+                HttpResponseMessage response = await _http.PostAsJsonAsync($"api/order?pOrderNo={pOrderNo}", orderViewModels);
+                response.EnsureSuccessStatusCode();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error creating orders: {ex.Message}");
+                throw;
+            }
         }
 
 
@@ -124,6 +132,16 @@ namespace OrderingSystem.Client.Services.OrderService
                 }
             }
 
+        public async Task<int> GetLatestOrderNumber()
+        {
+            var result = await _http.GetFromJsonAsync<int>($"api/order/latest-order-number");
+            return result;
+        }
 
+        public async Task<List<OrderViewModel>> GetOrdersByOrderNum(int orderNo)
+        {
+            var orders = await _http.GetFromJsonAsync<List<OrderViewModel>>($"api/order/orderbyNo?orderNo={orderNo}");
+            return orders;
+        }
     }
 }
